@@ -39,9 +39,16 @@ class activation:
 			val = 1/(1+np.exp(-self.u0.val))
 			self.u1 = unit(val,0)
 			return self.u1
+		elif(self.type=='relu'):
+			val = (self.u0.val>0)*self.u0.val
+			self.u1 = unit(val,0)
+			return self.u1
 	def backward(self):
 		if(self.type == 'sigmoid'):
 			self.u0.grad = self.u1.val*(1-self.u1.val)*self.u1.grad
+
+		elif(self.type == 'relu'):
+			self.u0.grad = (self.u1.val>0)*1.0*self.u1.grad
 
 class loss:
 	def __init__(self,out,exp):
@@ -70,19 +77,22 @@ w = unit(W)
 b = unit(B)
 y = unit(out)
 
-m = multiply(X,w)
-s = add(m.forward(),b)
-o = activation(s.forward(),typ = "sigmoid")
-los = loss(o.forward(),y)
-final = los.forward()
-#print(final.val)
-final.grad = 1
+for i in range(100):
+	m = multiply(X,w)
+	s = add(m.forward(),b)
+	o = activation(s.forward(),typ = "sigmoid")
+	los = loss(o.forward(),y)
+	final = los.forward()
+	#print(final.val)
+	final.grad = 1
 
-los.backward()
-o.backward()
-s.backward()
-m.backward()
-print(w.grad,w.val)
+	los.backward()
+	o.backward()
+	s.backward()
+	m.backward()
+	w.val -= 1*w.grad
+	b.val -= 1*b.grad
+	print(o.u1.val)
 
 
 
